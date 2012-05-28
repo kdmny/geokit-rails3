@@ -173,6 +173,7 @@ module Geokit
       end
 
       def distance_conditions(options)
+        return if adapter.is_a?(PostGIS)
         res = if options.has_key?(:within)
           "#{distance_column_name} <= #{options[:within]}"
         elsif options.has_key?(:beyond)
@@ -263,7 +264,11 @@ module Geokit
         lat = deg2rad(origin.lat)
         lng = deg2rad(origin.lng)
         multiplier = units_sphere_multiplier(units)
-
+        if adapter.is_a?(PostGIS)
+          lat = origin.lat
+          lng = origin.lng
+          multiplier = 1609.344
+        end
         adapter.sphere_distance_sql(lat, lng, multiplier) if adapter
       end
 
