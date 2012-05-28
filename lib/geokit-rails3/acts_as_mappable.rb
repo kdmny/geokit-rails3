@@ -163,6 +163,7 @@ module Geokit
       # If it's a :within query, add a bounding box to improve performance.
       # This only gets called if a :bounds argument is not otherwise supplied.
       def formulate_bounds_from_distance(options, origin, units)
+        return if adapter.is_a?(PostGIS)
         distance = options[:within] if options.has_key?(:within)
         distance = options[:range].last-(options[:range].exclude_end?? 1 : 0) if options.has_key?(:range)
         if distance
