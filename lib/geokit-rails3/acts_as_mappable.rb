@@ -163,7 +163,7 @@ module Geokit
       # If it's a :within query, add a bounding box to improve performance.
       # This only gets called if a :bounds argument is not otherwise supplied.
       def formulate_bounds_from_distance(options, origin, units)
-        return if adapter.is_a?(PostGIS)
+        return if adapter.is_a?(Geokit::Adapters::PostGIS)
         distance = options[:within] if options.has_key?(:within)
         distance = options[:range].last-(options[:range].exclude_end?? 1 : 0) if options.has_key?(:range)
         if distance
@@ -174,7 +174,7 @@ module Geokit
       end
 
       def distance_conditions(options)
-        return if adapter.is_a?(PostGIS)
+        return if adapter.is_a?(Geokit::Adapters::PostGIS)
         res = if options.has_key?(:within)
           "#{distance_column_name} <= #{options[:within]}"
         elsif options.has_key?(:beyond)
@@ -265,7 +265,7 @@ module Geokit
         lat = deg2rad(origin.lat)
         lng = deg2rad(origin.lng)
         multiplier = units_sphere_multiplier(units)
-        if adapter.is_a?(PostGIS)
+        if adapter.is_a?(Geokit::Adapters::PostGIS)
           lat = origin.lat
           lng = origin.lng
           multiplier = 1609.344
