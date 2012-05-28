@@ -174,7 +174,7 @@ module Geokit
       end
 
       def distance_conditions(options)
-        return if adapter.is_a?(Geokit::Adapters::PostGIS)
+        # return if adapter.is_a?(PostGIS)
         res = if options.has_key?(:within)
           "#{distance_column_name} <= #{options[:within]}"
         elsif options.has_key?(:beyond)
@@ -261,11 +261,12 @@ module Geokit
 
       # Returns the distance SQL using the spherical world formula (Haversine).  The SQL is tuned
       # to the database in use.
+
       def sphere_distance_sql(origin, units)
         lat = deg2rad(origin.lat)
         lng = deg2rad(origin.lng)
         multiplier = units_sphere_multiplier(units)
-        if adapter.is_a?(Geokit::Adapters::PostGIS)
+        if adapter.is_a?(PostGIS)
           lat = origin.lat
           lng = origin.lng
           multiplier = 1609.344
