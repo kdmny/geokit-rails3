@@ -21,20 +21,22 @@ module Geokit
 
           if reflection = Geokit::ActsAsMappable.end_of_reflection_chain(self.through, self)
             metaclass.instance_eval do
-              [ :distance_column_name, :default_units, :default_formula, :lat_column_name, :lng_column_name, :qualified_lat_column_name, :qualified_lng_column_name ].each do |method_name|
+              [ :distance_column_name, :default_units, :default_formula, :lat_column_name, :lng_column_name, :qualified_lat_column_name, :qualified_lng_column_name, :geom_column_name, :qualified_geom_column_name ].each do |method_name|
                 define_method method_name do
                   reflection.klass.send(method_name)
                 end
               end
             end
           else
-            cattr_accessor :distance_column_name, :default_units, :default_formula, :lat_column_name, :lng_column_name, :qualified_lat_column_name, :qualified_lng_column_name
+            cattr_accessor :distance_column_name, :default_units, :default_formula, :lat_column_name, :lng_column_name, :qualified_lat_column_name, :geom_column_name, :qualified_lng_column_name, :qualified_geom_column_name
 
             self.distance_column_name = options[:distance_column_name]  || 'distance'
             self.default_units = options[:default_units] || Geokit::default_units
             self.default_formula = options[:default_formula] || Geokit::default_formula
             self.lat_column_name = options[:lat_column_name] || 'lat'
             self.lng_column_name = options[:lng_column_name] || 'lng'
+            self.geom_column_name = options[:lng_column_name] || 'lng'            
+            self.qualified_geom_column_name = "#{table_name}.#{geom_column_name}"
             self.qualified_lat_column_name = "#{table_name}.#{lat_column_name}"
             self.qualified_lng_column_name = "#{table_name}.#{lng_column_name}"
 
