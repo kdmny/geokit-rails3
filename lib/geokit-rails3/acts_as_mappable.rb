@@ -174,8 +174,10 @@ module Geokit
       end
 
       def distance_conditions(options)
-        # return if adapter.is_a?(PostGIS)
-        res = if options.has_key?(:within)
+        
+        res = if adapter.is_a?(Geokit::Adapters::PostGIS)
+          "#{distance_column_name} <= #{options[:within]} * 1609.344"
+        elsif options.has_key?(:within)
           "#{distance_column_name} <= #{options[:within]}"
         elsif options.has_key?(:beyond)
           "#{distance_column_name} > #{options[:beyond]}"
