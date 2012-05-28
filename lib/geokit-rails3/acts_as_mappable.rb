@@ -106,6 +106,10 @@ module Geokit
       def farthest(options = {})
         geo_scope(options).order("#{distance_column_name} desc").limit(1)
       end
+      
+      def postgis?
+        adapter.is_a?(Geokit::Adapters::PostGIS)        
+      end
 
       def geo_scope(options = {})
         arel = self.is_a?(ActiveRecord::Relation) ? self : self.scoped
@@ -125,9 +129,10 @@ module Geokit
               star_select = Arel::SqlLiteral.new(arel.quoted_table_name + '.*')
               arel = arel.select(star_select)
             end
-            
-            distance_select = Arel::SqlLiteral.new("#{@distance_formula} AS #{distance_column_name}")
-            arel = arel.select(distance_select)
+            unless postgis?
+              distance_select = Arel::SqlLiteral.new("#{@distance_formula} AS #{distance_column_name}")
+              arel = arel.select(distance_select)
+            end
           end
 
           if bounds
@@ -135,7 +140,9 @@ module Geokit
             arel = arel.where(bound_conditions) if bound_conditions
           end
 
-          distance_conditions = distance_conditions(options)
+          distance_conditions = adapter.sphere_distance_sql(origin, options[:within] * 1609.344) if postgis? 
+          distance_conditions = distance_conditions(options) unless postgis?
+
           arel = arel.where(distance_conditions) if distance_conditions
 
           if origin
@@ -163,7 +170,7 @@ module Geokit
       # If it's a :within query, add a bounding box to improve performance.
       # This only gets called if a :bounds argument is not otherwise supplied.
       def formulate_bounds_from_distance(options, origin, units)
-        return if adapter.is_a?(Geokit::Adapters::PostGIS)
+        return if postgis?
         distance = options[:within] if options.has_key?(:within)
         distance = options[:range].last-(options[:range].exclude_end?? 1 : 0) if options.has_key?(:range)
         if distance
@@ -174,10 +181,7 @@ module Geokit
       end
 
       def distance_conditions(options)
-        
-        res = if adapter.is_a?(Geokit::Adapters::PostGIS)
-          "#{distance_column_name} <= #{options[:within]} * 1609.344"
-        elsif options.has_key?(:within)
+        res = if options.has_key?(:within)
           "#{distance_column_name} <= #{options[:within]}"
         elsif options.has_key?(:beyond)
           "#{distance_column_name} > #{options[:beyond]}"
@@ -265,14 +269,10 @@ module Geokit
       # to the database in use.
 
       def sphere_distance_sql(origin, units)
+        return if postgis?
         lat = deg2rad(origin.lat)
         lng = deg2rad(origin.lng)
         multiplier = units_sphere_multiplier(units)
-        if adapter.is_a?(Geokit::Adapters::PostGIS)
-          lat = origin.lat
-          lng = origin.lng
-          multiplier = 1609.344
-        end
         adapter.sphere_distance_sql(lat, lng, multiplier) if adapter
       end
 

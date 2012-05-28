@@ -2,17 +2,11 @@ module Geokit
   module Adapters
     class PostGIS < Abstract
       
-      def sphere_distance_sql(lat, lng, multiplier)
+      def sphere_distance_sql(origin, d)
         %|
-          ST_Distance(#{qualified_geom_column_name}, ST_GeographyFromText('POINT(#{lng} #{lat})'))
+          ST_DWithin(#{qualified_geom_column_name}, ST_GeographyFromText('POINT(#{origin.lng} #{origin.lat})'), #{d})
          |
-      end
-      
-      def flat_distance_sql(origin, lat_degree_units, lng_degree_units)
-        %|
-          ST_Distance(#{qualified_geom_column_name}, ST_GeographyFromText('POINT(#{lng_degree_units} #{lat_degree_units})'))
-         |
-      end
+      end      
     end
   end
 end
