@@ -35,7 +35,7 @@ module Geokit
             self.default_formula = options[:default_formula] || Geokit::default_formula
             self.lat_column_name = options[:lat_column_name] || 'lat'
             self.lng_column_name = options[:lng_column_name] || 'lng'
-            self.geom_column_name = options[:lng_column_name] || 'lng'            
+            self.geom_column_name = options[:geom_column_name] || 'lnglat'            
             self.qualified_geom_column_name = "#{table_name}.#{geom_column_name}"
             self.qualified_lat_column_name = "#{table_name}.#{lat_column_name}"
             self.qualified_lng_column_name = "#{table_name}.#{lng_column_name}"
