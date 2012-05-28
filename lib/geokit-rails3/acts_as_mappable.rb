@@ -266,7 +266,7 @@ module Geokit
         lat = deg2rad(origin.lat)
         lng = deg2rad(origin.lng)
         multiplier = units_sphere_multiplier(units)
-        if adapter.is_a?(PostGIS)
+        if adapter.is_a?(Geokit::Adapters::PostGIS)
           lat = origin.lat
           lng = origin.lng
           multiplier = 1609.344
